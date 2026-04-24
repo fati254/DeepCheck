@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload Code</title>
+</head>
+<body>
+
+<h2>Upload ton code</h2>
+
+<form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    
+    <input type="file" name="file">
+    <br><br>
+    
+    <button type="submit">Analyser</button>
+</form>
+
+</body>
+</html>
