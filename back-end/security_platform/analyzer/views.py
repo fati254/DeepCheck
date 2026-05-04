@@ -1,5 +1,7 @@
 from django.http import JsonResponse
 from django.shortcuts import redirect
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 
 def home(request):
     return JsonResponse({"message": "Backend analyzer is working"})
@@ -70,3 +72,15 @@ def upload_code(request):
             })
 
     return render(request, "analyzer/upload.html")
+
+###pour api de logiiiin 
+@api_view(['POST'])
+def login_api(request):
+    email = request.data.get("email")
+    password = request.data.get("password")
+
+    #test simple ( pour ameliorer ensuite )
+    if email == "test@gmail.com" and password == "123":
+        return Response({"status": "success"})
+    else :
+        return Response({"status": "error"})
