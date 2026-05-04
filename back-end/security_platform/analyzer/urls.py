@@ -3,6 +3,7 @@
 from django.urls import path
 from . import views
 from .views import login_api
+from .views import register_api
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -12,4 +13,5 @@ urlpatterns = [
     path("logout/", views.user_logout, name="logout"),
     path("upload/", views.upload_code, name="upload"),
     path('api/login/', login_api),
+    path('api/register/', register_api),
 ]
