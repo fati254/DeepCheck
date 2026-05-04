@@ -27,24 +27,57 @@
 </div>
 
 <script>
-const passwordInput = document.getElementById('password');
-const togglePassword = document.getElementById('togglePassword');
-togglePassword.addEventListener('click', () => {
-    if(passwordInput.type === 'password') {
-        passwordInput.type = 'text';
-        togglePassword.textContent = 'Hide Password';
-    } else {
-        passwordInput.type = 'password';
-        togglePassword.textContent = 'Show Password';
-    }
-});
-const form = document.getElementById('loginForm');
-form.addEventListener('submit', (e) => {
-    const email = document.getElementById('email').value.trim();
-    const password = passwordInput.value.trim();
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if(!emailRegex.test(email)) { alert('Please enter a valid email.'); e.preventDefault(); return; }
-    if(password.length < 6) { alert('Password must be at least 6 characters.'); e.preventDefault(); }
+document.addEventListener("DOMContentLoaded", () => {
+
+    console.log("JS OK"); // test
+
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    const form = document.getElementById('loginForm');
+
+    togglePassword.addEventListener('click', () => {
+        if(passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            togglePassword.textContent = 'Hide Password';
+        } else {
+            passwordInput.type = 'password';
+            togglePassword.textContent = 'Show Password';
+        }
+    });
+
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        alert("submit works"); // test important
+
+        const email = document.getElementById('email').value.trim();
+        const password = passwordInput.value.trim();
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/login/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ 
+                    email:email,
+                    password: password })
+            });
+
+            const data = await response.json();
+
+            if (data.status === "success") {
+                alert("Login réussi !");
+                window.location.href = "dashboard.php";
+            } else {
+                alert("Erreur login");
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Erreur serveur");
+        }
+    });
+
 });
 </script>
 </body>

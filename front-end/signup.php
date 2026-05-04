@@ -39,18 +39,54 @@
 </div>
 
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
     const signupForm = document.getElementById('signupForm');
-    
-    signupForm.addEventListener('submit', function(e) {
-        const pass = document.getElementById('password').value;
+
+    signupForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const username = document.getElementById('fullname').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
         const confirmPass = document.getElementById('confirm_password').value;
 
-        if (pass !== confirmPass) {
-            e.preventDefault(); // Empêche l'envoi du formulaire
-            alert("Passwords do not match! Please try again.");
-        } else {
-            // Ici, tu pourras ajouter ton code de connexion à la base de données plus tard
-            alert("Registration successful! (Simulated)");
+        if (password !== confirmPass) {
+            alert("Passwords do not match!");
+            return;
+        }
+
+        console.log("sending signup..."); // DEBUG
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/register/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    username: username,
+                    email: email,
+                    password: password
+                })
+            });
+
+            const data = await response.json();
+
+            console.log("response:", data); // DEBUG
+
+            if (data.status === "ook") {
+                alert("Account created successfully!");
+                window.location.href = "login.php";
+            } else {
+                alert("Signup error");
+            }
+
+        } catch (error) {
+            console.error(error);
+            alert("Server error");
         }
     });
+
+});
 </script>
