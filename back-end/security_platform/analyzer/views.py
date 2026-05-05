@@ -68,6 +68,7 @@ from django.contrib.auth.decorators import login_required
 def dashboard(request):
     return render(request, "analyzer/dashboard.html")
 
+
 from django.contrib.auth import logout
 
 def user_logout(request):
@@ -114,3 +115,21 @@ def login_api(request):
     else :
         return Response({"status": "error"})
     
+#########pour scan less code de securite
+from .security.scan import analyze_code
+
+@api_view(['POST'])
+def scan_api(request):
+    code = request.data.get("code")
+
+    if not code:
+        return Response({"status": "error"})
+
+    issues = analyze_code(code)
+    score = max(0, 100 - len(issues) * 10)
+
+    return Response({
+        "status": "success",
+        "issues": issues,
+        "score": score
+    })

@@ -30,7 +30,7 @@
                 </div>
                 <div class="editor-body">
                     <div class="line-numbers" id="lineNos">1</div>
-                    <textarea id="codeEditor" spellcheck="false" oninput="updateEditor()" placeholder="Paste your code here..."></textarea>
+                    <textarea id="codeEditor" spellcheck="false" oninput="window.updateEditor()" placeholder="Paste your code here..."></textarea>
                 </div>
             </div>
             <div class="results-panel" id="resultsPanel">
@@ -45,22 +45,103 @@
             <button class="btn-scan" onclick="startScan()">Run Deep Scan</button>
         </div>
     </div>
-
     <script>
-        const editor = document.getElementById('codeEditor');
-        const lineNos = document.getElementById('lineNos');
-        const workspace = document.getElementById('workspace');
+        console.log("JS LOADED");
+    document.addEventListener("DOMContentLoaded", () => {
 
-        function updateEditor() {
-            const lines = editor.value.split('\n').length;
-            lineNos.innerHTML = Array.from({length: lines}, (_, i) => i + 1).join('<br>');
+    
+    const editor = document.getElementById('codeEditor');
+    const lineNos = document.getElementById('lineNos');
+
+   window.updateEditor = function() {
+    const lines = editor.value.split("\n").length;
+
+    let numbers = "";
+    for (let i = 1; i <= lines; i++) {
+        numbers += i + "<br>";
+    }
+
+    lineNos.innerHTML = numbers;
+};
+
+window.clearEditor = function() {
+    
+    editor.value = '';
+    updateEditor();
+}
+
+    window.startScan = async function() {
+
+        document.getElementById("workspace").classList.add("active");
+        
+        const resultDiv = document.getElementById("aiResponse");
+       
+
+        if (!resultDiv) {
+            alert("aiResponse not found ❌");
+            return;
         }
-        function clearEditor() { editor.value = ''; updateEditor(); workspace.classList.remove('active'); }
-        function startScan() {
-            if(editor.value.trim() === "") return alert("Empty code!");
-            workspace.classList.add('active');
-            document.getElementById('aiResponse').innerHTML = "<p style='color:#ffbd2e;'>Analyzing vulnerabilities...</p>";
+
+        const code = editor.value;
+
+        if (code.trim() === "") {
+            return alert("Empty code!");
         }
-    </script>
+
+        resultDiv.innerHTML = "<p style='color:#ffbd2e;'>Analyzing...</p>";
+
+        try {
+            const response = await fetch("http://127.0.0.1:8000/api/scan/", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({ code: code })
+            });
+
+            const data = await response.json();
+
+            console.log("DATA:", data);
+
+            if (data && data.status === "success") {
+
+                if (data.issues.length === 0) {
+                    resultDiv.innerHTML = "<p style='color:green;'>✅ No issues found</p>";
+                } else {
+
+                    // affichage 
+                    let html = "<h4 class='scan-title'>Security Issues</h4><div class='issues-list'>";
+                    data.issues.forEach(issue => {
+                        html += `
+                         <div class="issue-card">
+                           <span class="issue-icon">⚠️</span>
+                           <span class="issue-text">${issue}</span>
+                         </div>
+                        `;
+                    });
+                    html += "</div>";
+
+                    resultDiv.innerHTML = html;  
+                    
+                }
+
+            } else {
+                resultDiv.innerHTML = "<p style='color:red;'>Error scanning</p>";
+            }
+
+        } catch (error) {
+            console.error(error);
+            resultDiv.innerHTML = "<p style='color:red;'>Server error</p>";
+        }
+    };    
+
+    editor.addEventListener("scroll", () => {
+    lineNos.scrollTop = editor.scrollTop;
+});
+updateEditor();
+
+});
+</script>
+
 </body>
 </html>

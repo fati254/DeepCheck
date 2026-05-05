@@ -4,6 +4,7 @@ from django.urls import path
 from . import views
 from .views import login_api
 from .views import register_api
+from .views import scan_api
 
 urlpatterns = [
     path('', views.home, name='home'),
@@ -14,4 +15,5 @@ urlpatterns = [
     path("upload/", views.upload_code, name="upload"),
     path('api/login/', login_api),
     path('api/register/', register_api),
+    path('api/scan/', scan_api),
 ]

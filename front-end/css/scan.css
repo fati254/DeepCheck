@@ -50,17 +50,18 @@ body {
 .workspace {
     display: flex;
     gap: 20px;
-    flex: 1;
-    transition: 0.5s ease;
+    /*flex: 1;
+    transition: 0.5s ease;*/
 }
 
 .editor-core {
-    flex: 1;
+    width: 60%;
+    /* flex: 1;
     background: var(--editor-bg);
     border-radius: 8px;
     display: flex;
     flex-direction: column;
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.05);  */
 }
 
 .editor-header {
@@ -76,6 +77,7 @@ body {
 
 .editor-body {
     display: flex;
+    height: 100%;
     flex: 1;
     position: relative;
     overflow: hidden;
@@ -84,16 +86,17 @@ body {
 .line-numbers {
     padding: 15px 10px;
     color: #3b5360;
-    text-align: right;
     font-family: 'Fira Code', monospace;
     font-size: 14px;
     background: #01111d;
     user-select: none;
+    min-width: 40px;
+    text-align: right;
 }
 
 textarea {
     flex: 1;
-    background: transparent;
+    background: var(--editor-bg);
     border: none;
     color: #d6deeb;
     font-family: 'Fira Code', monospace;
@@ -101,21 +104,21 @@ textarea {
     padding: 15px;
     resize: none;
     outline: none;
+    white-space: pre;
     line-height: 1.5;
 }
 
 .results-panel {
     width: 0;
     opacity: 0;
+    overflow: hidden;
     background: var(--panel-bg);
     border-radius: 8px;
-    transition: 0.5s;
-    overflow-y: auto;
-    border: 1px solid rgba(100, 255, 218, 0.1);
+    transition: 0.4s ease;
 }
 
 .workspace.active .results-panel {
-    width: 400px;
+    width: 40%;
     opacity: 1;
     padding: 20px;
 }
@@ -148,3 +151,47 @@ textarea {
 }
 
 .user-info { font-size: 0.8rem; color: var(--cyan); }
+#aiResponse {
+    display: block !important;
+}
+/* TITLE */
+.scan-title {
+    color: var(--cyan);
+    font-size: 1rem;
+    margin-bottom: 15px;
+}
+
+/* LIST */
+.issues-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+/* CARD */
+.issue-card {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(100, 255, 218, 0.05);
+    border-left: 3px solid var(--cyan);
+    padding: 10px;
+    border-radius: 6px;
+    transition: 0.3s;
+}
+
+/* HOVER EFFECT */
+.issue-card:hover {
+    background: rgba(255, 80, 80, 0.15);
+}
+
+/* ICON */
+.issue-icon {
+    font-size: 1.2rem;
+}
+
+/* TEXT */
+.issue-text {
+    font-size: 0.85rem;
+    color: #ccd6f6;
+}
