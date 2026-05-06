@@ -1,47 +1,103 @@
-#hadchi hta howa
 def analyze_code(code):
-    issues = [] #  Crée une liste vide pour stocker les problèmes détectés
+    issues = []
 
-    line = code.split("\n") ###pour detecter la ligne et separer ligne par ligne 
-    
-    for i, line in enumerate(line, start=1):
-    
-     if "execute(" in line and "+" in line: #  Vérification de SQL Injection
-        issues.append(f"Possible SQL Injection (Line {i})") # Si la condition est vraie, on ajoute un avertissement à la liste
+    lines = code.split("\n")
 
-     if "eval(" in line:  #  Vérification de eval()
-        issues.append(f"Dangerous use of eval() (Line {i})")
+    for i, line in enumerate(lines, start=1):
+        line_clean = line.strip()
 
-    # exec()
-     if "exec(" in line:
-        issues.append(f"Dangerous use of exec() (Line {i})")
+        # ignorer lignes vides
+        if not line_clean:
+            continue
 
-    # import os + system (command injection possible)
-     if "os.system(" in line:
-        issues.append(f"Possible command injection via os.system() (Line {i})")
+        # SQL Injection
+        if "execute(" in line_clean and "+" in line_clean:
+            issues.append({
+                "line": i,
+                "message": "Possible SQL Injection",
+                "recommendation": "Use parameterized queries (cursor.execute(query, params))",
+                "fix": None
+            })
 
-    # subprocess avec shell=True
-     if "subprocess" in line and "shell=True" in line:
-        issues.append(f"Unsafe subprocess call with shell=True (Line {i})")
+        # eval()
+        if "eval(" in line_clean:
+            issues.append({
+                "line": i,
+                "message": "Dangerous use of eval()",
+                "recommendation": "Use ast.literal_eval() instead of eval()",
+                "fix": "replace_eval"
+            })
 
-    # mot de passe en dur
-     if "password =" in line or "passwd =" in line:
-        issues.append(f"Hardcoded password detected (Line {i})")
+        # exec()
+        if "exec(" in line_clean:
+            issues.append({
+                "line": i,
+                "message": "Dangerous use of exec()",
+                "recommendation": "Avoid exec() or restrict input",
+                "fix": None
+            })
 
-    # utilisation de pickle (risque de line execution)
-     if "pickle.load" in line:
-        issues.append(f"Unsafe deserialization with pickle (Line {i})")
+        # os.system
+        if "os.system(" in line_clean:
+            issues.append({
+                "line": i,
+                "message": "Possible command injection",
+                "recommendation": "Use subprocess.run() with list arguments",
+                "fix": None
+            })
 
-    # utilisation de input() (selon contexte)
-     if "input(" in line:
-        issues.append(f"User input detected (validate inputs!) (Line {i})")
+        # subprocess shell=True
+        if "subprocess" in line_clean and "shell=True" in line_clean:
+            issues.append({
+                "line": i,
+                "message": "Unsafe subprocess usage (shell=True)",
+                "recommendation": "Use shell=False to prevent injection",
+                "fix": "remove_shell_true"
+            })
 
-    # ouverture de fichier en écriture sans contrôle
-     if "open(" in line and "w" in line:
-        issues.append(f"File write operation detected (check permissions) (Line {i})")
+        # password hardcoded (plus robuste)
+        if any(x in line_clean.lower() for x in ["password =", "passwd =", "pwd ="]):
+            issues.append({
+                "line": i,
+                "message": "Hardcoded password detected",
+                "recommendation": "Store secrets in environment variables",
+                "fix": None
+            })
 
-    # utilisation de requests sans timeout
-     if "requests.get(" in line and "timeout" not in line:
-        issues.append(f"HTTP request without timeout (Line {i})")
+        # pickle
+        if "pickle.load" in line_clean:
+            issues.append({
+                "line": i,
+                "message": "Unsafe deserialization with pickle",
+                "recommendation": "Avoid loading untrusted data with pickle",
+                "fix": None
+            })
 
-    return issues # Retourne la liste des problèmes détectés
+        # input
+        if "input(" in line_clean:
+            issues.append({
+                "line": i,
+                "message": "User input detected",
+                "recommendation": "Validate and sanitize inputs",
+                "fix": None
+            })
+
+        # file write (plus précis)
+        if "open(" in line_clean and ("'w'" in line_clean or '"w"' in line_clean):
+            issues.append({
+                "line": i,
+                "message": "File write operation detected",
+                "recommendation": "Ensure proper permissions and validation",
+                "fix": None
+            })
+
+        # requests timeout
+        if "requests.get(" in line_clean and "timeout" not in line_clean:
+            issues.append({
+                "line": i,
+                "message": "HTTP request without timeout",
+                "recommendation": "Add timeout parameter (e.g., timeout=5)",
+                "fix": "add_timeout"
+            })
+
+    return issues

@@ -133,3 +133,10 @@ def scan_api(request):
         "issues": issues,
         "score": score
     })
+
+
+
+from django.shortcuts import render
+
+def editor_view(request):
+    return render(request, "analyzer/editor.html")

@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DeepCheck Editor</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #0a192f;
+            color: white;
+        }
+
+        #editor {
+            height: 90vh;
+        }
+    </style>
+</head>
+<body>
+
+<h2 style="padding:10px;">DeepCheck Code Editor</h2>
+
+<div id="editor"></div>
+
+<!-- Monaco CDN -->
+<script src="https://unpkg.com/monaco-editor@0.45.0/min/vs/loader.js"></script>
+
+<script>
+    require.config({
+        paths: {
+            vs: 'https://unpkg.com/monaco-editor@0.45.0/min/vs'
+        }
+    });
+
+    require(['vs/editor/editor.main'], function () {
+
+        window.editor = monaco.editor.create(document.getElementById('editor'), {
+            value: "# Write your Python code here\nprint('Hello DeepCheck')",
+            language: "python",
+            theme: "vs-dark",
+            fontSize: 14,
+            automaticLayout: true
+        });
+
+    });
+</script>
+
+</body>
+</html>
