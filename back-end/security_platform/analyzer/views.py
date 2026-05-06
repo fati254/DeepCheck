@@ -121,11 +121,12 @@ from .security.scan import analyze_code
 @api_view(['POST'])
 def scan_api(request):
     code = request.data.get("code")
+    language = request.data.get("language", "Python")
 
     if not code:
         return Response({"status": "error"})
 
-    issues = analyze_code(code)
+    issues = analyze_code(code, language)
     score = max(0, 100 - len(issues) * 10)
 
     return Response({
