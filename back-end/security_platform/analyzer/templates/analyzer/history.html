@@ -1,0 +1,160 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>
+        DeepCheck | History
+    </title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{% static 'css/dashboard.css' %}">
+
+</head>
+
+<body>
+
+<nav class="topbar">
+
+    <div class="logo">
+        DeepCheck
+    </div>
+
+    <div class="nav-links">
+
+        <a href="/scan/">
+            Security Scan
+        </a>
+
+        <a href="/dashboard/">
+            Dashboard
+        </a>
+
+        <a href="/history/"
+           class="active">
+
+            History
+
+        </a>
+
+    </div>
+
+    <div class="user-status">
+
+        {{ request.user.username }}
+
+    </div>
+
+</nav>
+
+<div class="container">
+
+    <h1>
+        Scan History
+    </h1>
+
+    <p class="subtitle">
+
+        All previous DeepCheck scans.
+
+    </p>
+
+    <div class="activity-section">
+
+        <table class="history-table">
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Language
+                    </th>
+
+                    <th>
+                        Score
+                    </th>
+
+                    <th>
+                        Issues
+                    </th>
+
+                    <th>
+                        Date
+                    </th>
+
+                    <th>
+                        Status
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody>
+
+            {% for scan in scans %}
+
+                <tr>
+
+                    <td>
+                        {{ scan.language }}
+                    </td>
+
+                    <td>
+                        {{ scan.score }}/100
+                    </td>
+
+                    <td>
+                        {{ scan.total_issues }}
+                    </td>
+
+                    <td>
+                        {{ scan.created_at }}
+                    </td>
+
+                    <td>
+
+                        {% if scan.score >= 80 %}
+
+                            <span class="badge secure">
+                                SECURE
+                            </span>
+
+                        {% elif scan.score >= 50 %}
+
+                            <span class="badge warning">
+                                MEDIUM
+                            </span>
+
+                        {% else %}
+
+                            <span class="badge failed">
+                                CRITICAL
+                            </span>
+
+                        {% endif %}
+
+                    </td>
+
+                </tr>
+
+            {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+</body>
+</html>

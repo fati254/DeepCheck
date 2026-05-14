@@ -1,6 +1,269 @@
-<h2>Dashboard</h2>
+{% load static %}
 
-<p>Bienvenue {{ request.user.username }} 👋</p>
+<!DOCTYPE html>
+<html lang="en">
 
-<a href="/upload/">Uploader du code</a><br><br>
-<a href="/logout/">Se déconnecter</a>
+<head>
+
+    <meta charset="UTF-8">
+
+    <title>
+        DeepCheck | Dashboard
+    </title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="{% static 'css/dashboard.css' %}">
+
+</head>
+
+<body>
+
+    <!-- =========================
+         TOPBAR
+    ========================== -->
+
+    <nav class="topbar">
+
+        <div class="logo">
+            DeepCheck
+        </div>
+
+        <div class="nav-links">
+
+            <a href="{% url 'scan_page' %}">
+                Security Scan
+            </a>
+
+            <a href="{% url 'dashboard' %}"
+               class="active">
+
+                Dashboard
+
+            </a>
+
+            <a href="/history/">
+                History
+            </a>
+
+        </div>
+
+        <div class="user-status">
+
+            {{ request.user.username }}
+
+        </div>
+
+    </nav>
+
+    <!-- =========================
+         MAIN CONTAINER
+    ========================== -->
+
+    <div class="container">
+
+        <h1>
+            Security Dashboard
+        </h1>
+
+        <p class="subtitle">
+
+            Overview of your code security posture.
+
+        </p>
+
+        <!-- =========================
+             STATS CARDS
+        ========================== -->
+
+        <div class="stats-grid">
+
+            <div class="stat-card">
+
+                <span>
+                    Total Scans
+                </span>
+
+                <h2 id="totalScans">
+                    0
+                </h2>
+
+            </div>
+
+            <div class="stat-card critical">
+
+                <span>
+                    Critical Issues
+                </span>
+
+                <h2 id="criticalIssues">
+                    0
+                </h2>
+
+            </div>
+
+            <div class="stat-card">
+
+                <span>
+                    Average Score
+                </span>
+
+                <h2 id="averageScore">
+                    0%
+                </h2>
+
+            </div>
+
+        </div>
+
+        <!-- =========================
+             RECENT ACTIVITY
+        ========================== -->
+
+        <div class="activity-section">
+
+            <h3>
+                Recent Activity
+            </h3>
+
+            <table class="history-table">
+
+                <thead>
+
+                    <tr>
+
+                        <th>
+                            Language
+                        </th>
+
+                        <th>
+                            Date
+                        </th>
+
+                        <th>
+                            Vulnerabilities
+                        </th>
+
+                        <th>
+                            Status
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody id="recentActivity">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+<!-- =========================
+     DASHBOARD API
+========================= -->
+
+<script>
+
+async function loadDashboard() {
+
+    try {
+
+        const response = await fetch(
+            "http://127.0.0.1:8000/api/dashboard/"
+        );
+
+        const data = await response.json();
+
+        console.log(data);
+
+        // =========================
+        // UPDATE CARDS
+        // =========================
+
+        document.getElementById(
+            "totalScans"
+        ).innerText = data.total_scans;
+
+        document.getElementById(
+            "criticalIssues"
+        ).innerText = data.critical_issues;
+
+        document.getElementById(
+            "averageScore"
+        ).innerText = data.average_score + "%";
+
+        // =========================
+        // UPDATE TABLE
+        // =========================
+
+        let html = "";
+
+        data.recent_scans.forEach(scan => {
+
+            html += `
+
+                <tr>
+
+                    <td>
+                        ${scan.language}
+                    </td>
+
+                    <td>
+                        ${scan.date}
+                    </td>
+
+                    <td>
+                        ${scan.issues} vulnerabilities
+                    </td>
+
+                    <td>
+
+                        ${
+                            scan.score >= 80
+
+                            ? `<span class="badge secure">
+                                    SECURE
+                               </span>`
+
+                            : `<span class="badge failed">
+                                    RISK
+                               </span>`
+                        }
+
+                    </td>
+
+                </tr>
+
+            `;
+        });
+
+        document.getElementById(
+            "recentActivity"
+        ).innerHTML = html;
+
+    }
+
+    catch(error) {
+
+        console.error(
+            "Dashboard API Error:",
+            error
+        );
+
+    }
+
+}
+
+// LOAD DASHBOARD
+loadDashboard();
+
+</script>
+
+</body>
+</html>

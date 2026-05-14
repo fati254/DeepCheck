@@ -2,8 +2,11 @@ from django.http import JsonResponse
 from django.shortcuts import redirect
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from .security.scan import analyze_code
+from .models import ScanHistory
+from django.db.models import Avg
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
-
 def home(request):
     return JsonResponse({"message": "Backend analyzer is working"})
 
@@ -66,9 +69,33 @@ from django.contrib.auth.decorators import login_required
 
 @login_required
 def dashboard(request):
-    return render(request, "analyzer/dashboard.html")
 
+    scans = ScanHistory.objects.filter(
+        user=request.user
+    ).order_by("-created_at")
 
+    total_scans = scans.count()
+
+    critical_issues = sum(
+        scan.critical_issues for scan in scans
+    )
+
+    average_score = scans.aggregate(
+        Avg("score")
+    )["score__avg"] or 0
+
+    context = {
+        "total_scans": total_scans,
+        "critical_issues": critical_issues,
+        "average_score": round(average_score),
+        "recent_scans": scans[:5]
+    }
+
+    return render(
+        request,
+        "analyzer/dashboard.html",
+        context
+    )
 from django.contrib.auth import logout
 
 def user_logout(request):
@@ -116,7 +143,7 @@ def login_api(request):
         return Response({"status": "error"})
     
 #########pour scan less code de securite
-from .security.scan import analyze_code
+
 
 @api_view(['POST'])
 def scan_api(request):
@@ -129,15 +156,92 @@ def scan_api(request):
     issues = analyze_code(code, language)
     score = max(0, 100 - len(issues) * 10)
 
+    critical_count = sum(
+    1 for issue in issues
+    if "critical" in issue.get(
+        "severity",
+        ""
+    ).lower()
+)
+# =========================
+# SAVE SCAN
+# =========================
+
+    ScanHistory.objects.create(
+
+         user=User.objects.first(),
+
+         language=language,
+
+         total_issues=len(issues),
+
+         critical_issues=critical_count,
+
+          score=score
+
+        )
+
+
     return Response({
         "status": "success",
         "issues": issues,
         "score": score
-    })
+       })
 
 
 
-from django.shortcuts import render
+
 
 def editor_view(request):
     return render(request, "analyzer/editor.html")
+
+
+def dashboard_api(request):
+
+    scans = ScanHistory.objects.all().order_by("-created_at")
+
+    total_scans = scans.count()
+
+    critical_issues = sum(
+        scan.critical_issues for scan in scans
+    )
+
+    average_score = scans.aggregate(
+        Avg("score")
+    )["score__avg"] or 0
+
+    recent_scans = []
+
+    for scan in scans[:5]:
+
+        recent_scans.append({
+            "language": scan.language,
+            "score": scan.score,
+            "issues": scan.total_issues,
+            "date": scan.created_at.strftime("%Y-%m-%d %H:%M"),
+        })
+
+    return JsonResponse({
+        "total_scans": total_scans,
+        "critical_issues": critical_issues,
+        "average_score": round(average_score),
+        "recent_scans": recent_scans
+    })
+
+def history_page(request):
+
+    scans = ScanHistory.objects.order_by(
+        "-created_at"
+    )
+
+    return render(
+
+        request,
+
+        "analyzer/history.html",
+
+        {
+            "scans": scans
+        }
+
+    )

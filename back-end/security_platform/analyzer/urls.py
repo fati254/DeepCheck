@@ -18,4 +18,6 @@ urlpatterns = [
     path('api/register/', register_api),
     path('api/scan/', scan_api),
     path('editor/', editor_view, name='editor'),
+    path("api/dashboard/", views.dashboard_api),
+    path("history/",views.history_page,name="history"),
 ]
