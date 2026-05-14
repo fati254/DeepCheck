@@ -149,6 +149,10 @@ def login_api(request):
 def scan_api(request):
     code = request.data.get("code")
     language = request.data.get("language", "Python")
+    
+
+    data = request.data
+    filename = data.get("filename","unknown.py")
 
     if not code:
         return Response({"status": "error"})
@@ -171,13 +175,17 @@ def scan_api(request):
 
          user=User.objects.first(),
 
+         filename=filename,
+
          language=language,
 
          total_issues=len(issues),
 
          critical_issues=critical_count,
 
-          score=score
+         score=score,
+
+         code=code
 
         )
 
@@ -215,7 +223,7 @@ def dashboard_api(request):
     for scan in scans[:5]:
 
         recent_scans.append({
-            "language": scan.language,
+            "filename": scan.filename, 
             "score": scan.score,
             "issues": scan.total_issues,
             "date": scan.created_at.strftime("%Y-%m-%d %H:%M"),

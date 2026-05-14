@@ -14,7 +14,9 @@ class CodeSubmission(models.Model):
 class ScanHistory(models.Model):
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-
+    
+    filename = models.CharField(max_length=255, default="unknown.py")
+    
     language = models.CharField(max_length=50)
 
     score = models.IntegerField()
@@ -26,6 +28,7 @@ class ScanHistory(models.Model):
     code = models.TextField()
 
     created_at = models.DateTimeField(auto_now_add=True)
+
 
     def __str__(self):
         return f"{self.user.username} - {self.language}"
