@@ -22,4 +22,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('analyzer.urls')),  # 🔥 lien vers ton app
+    path('ai_security/', include('ai_security.urls')),
 ]

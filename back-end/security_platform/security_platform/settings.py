@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'analyzer',
     'rest_framework',
     'corsheaders',
+    'ai_security',
 ]
 
 MIDDLEWARE = [
