@@ -1,4 +1,10 @@
 from django.shortcuts import render
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+import requests
+import os
+import json
+import subprocess
 
 def assistant(request):
 
@@ -28,10 +34,7 @@ def assistant(request):
 
     return render(request, 'ai_security/assistant.html', context)  
 
-from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
-import requests
-import os
+
 
 SONAR_URL = "http://localhost:9000"
 SONAR_TOKEN = "sqp_5712940767dc9e00ab447eb9450ed6ee486d7534"
@@ -106,7 +109,11 @@ SECURITY_KNOWLEDGE_BASE = {
 @csrf_exempt
 def assistant_api(request):
 
+    global LAST_SCANNED_FILE
+
     try:
+
+        scan_file = LAST_SCANNED_FILE
 
         response = requests.get(
 
@@ -114,6 +121,7 @@ def assistant_api(request):
 
             params={
                 "componentKeys": "DeepCheck",
+                "resolved": "false",
                 "ps": 20
             },
 
@@ -129,19 +137,27 @@ def assistant_api(request):
         # CUSTOM AI ANALYSIS
         # =========================
 
-        scan_file = "scanned_code.py"
-
         if os.path.exists(scan_file):
+
+            print("FILE DETECTED")
 
             with open(scan_file, "r", encoding="utf-8") as file:
 
                 scanned_content = file.read().lower()
 
+            print(scanned_content)
+
             for key, data in SECURITY_KNOWLEDGE_BASE.items():
+
+                print("SEARCHING:", key)
 
                 if key in scanned_content:
 
+                    print("FOUND:", key)
+
                     issues.append({
+
+                        "id": len(issues) + 1,
 
                         "title": data["title"],
 
@@ -166,6 +182,16 @@ def assistant_api(request):
         # =========================
 
         for issue in sonar_data.get("issues", []):
+
+            component = issue.get(
+                "component",
+                ""
+            )
+
+            # ✅ IMPORTANT :
+            # afficher seulement le fichier scanné
+            if scan_file not in component:
+                continue
 
             severity = issue.get(
                 "severity",
@@ -204,13 +230,22 @@ def assistant_api(request):
 
             issues.append({
 
+                "id": len(issues) + 1,
+
                 "title": title,
+
                 "severity": severity,
+
                 "priority": priority,
+
                 "description": description,
+
                 "recommendation": recommendation,
+
                 "secure_example": secure_example,
-                "file": issue.get("component", "Unknown File"),
+
+                "file": scan_file,
+
                 "line": issue.get("line", "?")
 
             })
@@ -249,3 +284,91 @@ def apply_fixes(request):
         "Low and medium risks reviewed successfully."
 
     })
+
+@csrf_exempt
+def scan_code(request):
+
+    global LAST_SCANNED_FILE
+
+    try:
+
+        body = json.loads(request.body)
+
+        user_code = body.get("code", "")
+        filename = body.get("filename", "unknown.py")
+
+        # =========================
+        # CREATE SCANNER WORKSPACE
+        # =========================
+
+        workspace = "scanner_workspace"
+
+        os.makedirs(
+            workspace,
+            exist_ok=True
+        )
+
+        # =========================
+        # FULL FILE PATH
+        # =========================
+
+        scan_path = os.path.join(
+            workspace,
+            filename
+        )
+
+        LAST_SCANNED_FILE = scan_path
+
+        # =========================
+        # DELETE OLD FILE
+        # =========================
+
+        if os.path.exists(scan_path):
+
+            os.remove(scan_path)
+
+        # =========================
+        # SAVE USER CODE
+        # =========================
+
+        with open(
+            scan_path,
+            "w",
+            encoding="utf-8"
+        ) as file:
+
+            file.write(user_code)
+
+        print("NEW CODE SAVED")
+        print("FILE:", scan_path)
+
+        # =========================
+        # RUN SONAR SCANNER
+        # =========================
+
+        subprocess.run(
+
+            ["sonar-scanner"],
+
+            shell=True
+
+        )
+
+        return JsonResponse({
+
+            "status": "success",
+
+            "message":
+            "Code scanned successfully"
+
+        })
+
+    except Exception as e:
+
+        return JsonResponse({
+
+            "status": "error",
+
+            "error": str(e)
+
+        })
