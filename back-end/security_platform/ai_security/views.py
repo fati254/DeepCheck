@@ -102,7 +102,136 @@ SECURITY_KNOWLEDGE_BASE = {
 
         "secure_example":
         "hashlib.sha256(data.encode())"
-    }
+    },
+
+    "shell=true": {
+
+        "title": "Dangerous shell=True Usage",
+
+        "severity": "HIGH",
+
+        "description":
+        "shell=True can allow command injection.",
+
+        "recommendation":
+        "Use shell=False in subprocess.",
+
+        "secure_example":
+         'subprocess.run(["dir"], shell=False)'
+},
+
+"os.system": {
+
+    "title": "Command Injection Risk",
+
+    "severity": "HIGH",
+
+    "description":
+    "os.system() may execute dangerous system commands.",
+
+    "recommendation":
+    "Use subprocess with safe arguments.",
+
+    "secure_example":
+    'subprocess.run(["ping", username])'
+},
+
+"admin123": {
+
+    "title": "Hardcoded Password",
+
+    "severity": "HIGH",
+
+    "description":
+    "Hardcoded passwords are insecure.",
+
+    "recommendation":
+    "Store passwords in environment variables.",
+
+    "secure_example":
+    'os.getenv("DB_PASSWORD")'
+},
+
+"secret": {
+
+    "title": "Hardcoded Secret Key",
+
+    "severity": "CRITICAL",
+
+    "description":
+    "Secret keys should never be stored directly in code.",
+
+    "recommendation":
+    "Use environment variables or secret managers.",
+
+    "secure_example":
+    'os.getenv("SECRET_KEY")'
+},
+
+"select * from": {
+
+    "title": "Possible SQL Injection",
+
+    "severity": "CRITICAL",
+
+    "description":
+    "SQL query built from user input detected.",
+
+    "recommendation":
+    "Use parameterized queries.",
+
+    "secure_example":
+    'cursor.execute("SELECT * FROM users WHERE id=%s", (user_id,))'
+},
+
+"innerhtml": {
+
+    "title": "Possible XSS Vulnerability",
+
+    "severity": "HIGH",
+
+    "description":
+    "innerHTML may allow script injection.",
+
+    "recommendation":
+    "Use textContent instead of innerHTML.",
+
+    "secure_example":
+    'element.textContent = userInput'
+},
+
+"document.write": {
+
+    "title": "Unsafe document.write Usage",
+
+    "severity": "MEDIUM",
+
+    "description":
+    "document.write() may introduce XSS vulnerabilities.",
+
+    "recommendation":
+    "Use safe DOM methods.",
+
+    "secure_example":
+    'element.textContent = data'
+},
+
+"debug=true": {
+
+    "title": "Debug Mode Enabled",
+
+    "severity": "MEDIUM",
+
+    "description":
+    "Debug mode should not be enabled in production.",
+
+    "recommendation":
+    "Disable debug mode in production.",
+
+    "secure_example":
+    'debug=False'
+},
+    
 
 }
 
